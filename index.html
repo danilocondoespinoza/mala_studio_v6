@@ -1098,17 +1098,24 @@ async function initApp() {
   try {
     const { createClient } = supabase;
     // Forzar fetch sin caché en todas las peticiones a Supabase
+    // IMPORTANTE: convertir Headers a objeto plano antes de spread
+    // para no perder el apikey ni el Authorization header de Supabase
     SB = createClient(cfg.url, cfg.key, {
       global: {
-        fetch: (url, options = {}) => fetch(url, {
-          ...options,
-          cache: 'no-store',
-          headers: {
-            ...options.headers,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-          }
-        })
+        fetch: (url, options = {}) => {
+          const existingHeaders = options.headers instanceof Headers
+            ? Object.fromEntries(options.headers.entries())
+            : (options.headers || {});
+          return fetch(url, {
+            ...options,
+            cache: 'no-store',
+            headers: {
+              ...existingHeaders,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+            }
+          });
+        }
       }
     });
     await loadAllData();
