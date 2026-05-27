@@ -241,6 +241,7 @@ tr:hover td{background:rgba(186,208,231,0.08);}
 .apt-card:hover{transform:translateX(3px);}
 .apt-card.done{border-left-color:var(--green);}
 .apt-card.cancelled{border-left-color:var(--soft);opacity:0.6;}
+.apt-card.wa-selected{border-left-color:var(--wine);border-color:var(--wine-light);background:rgba(155,74,106,0.07);box-shadow:0 0 0 1.5px var(--wine-light),0 6px 20px rgba(155,74,106,0.15);}
 .apt-time{font-size:10.5px;color:var(--soft);font-weight:500;}
 .apt-client{font-size:15px;font-weight:600;color:var(--wine);margin-top:2px;}
 .apt-svc{font-size:12px;color:var(--wine-light);margin-top:2px;}
@@ -475,23 +476,47 @@ input[type=range]{accent-color:var(--wine);}
       <div class="fancy italic" style="font-size:20px;margin-top:8px;line-height:1.6;font-weight:300;opacity:0.92;" id="homeQuote"></div>
     </div>
     <div class="g4 mb14">
-      <div class="stat"><div class="stat-lbl">Citas Hoy</div><div class="stat-val" id="sCitasHoy">0</div><div class="stat-sub">Esta jornada</div></div>
-      <div class="stat"><div class="stat-lbl">Servicios del Mes</div><div class="stat-val" id="sServMes">0</div><div class="stat-sub">Realizados</div></div>
-      <div class="stat"><div class="stat-lbl">Clientes en Base</div><div class="stat-val" id="sClientesMes">0</div><div class="stat-sub">Registradas</div></div>
-      <div class="stat">
-        <div class="stat-lbl">Net Revenue</div>
+      <div class="stat" onclick="go('agenda')" style="cursor:pointer;" title="Ver agenda">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Citas Hoy</div><span style="font-size:18px;">📅</span></div>
+        <div class="stat-val" id="sCitasHoy">0</div>
+        <div class="flex jb ic mt6"><div class="stat-sub">Esta jornada</div><div id="trendCitasHoy" style="font-size:11px;font-weight:600;"></div></div>
+      </div>
+      <div class="stat" onclick="go('agenda')" style="cursor:pointer;" title="Ver agenda del mes">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Servicios del Mes</div><span style="font-size:18px;">💅</span></div>
+        <div class="stat-val" id="sServMes">0</div>
+        <div class="flex jb ic mt6"><div class="stat-sub">Realizados</div><div id="trendServMes" style="font-size:11px;font-weight:600;"></div></div>
+      </div>
+      <div class="stat" onclick="go('clientes')" style="cursor:pointer;" title="Ver clientes">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Clientes en Base</div><span style="font-size:18px;">👥</span></div>
+        <div class="stat-val" id="sClientesMes">0</div>
+        <div class="flex jb ic mt6"><div class="stat-sub">Registradas</div><div id="trendClientes" style="font-size:11px;font-weight:600;"></div></div>
+      </div>
+      <div class="stat" onclick="go('clientes')" style="cursor:pointer;" title="Ver ventas">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Net Revenue</div><span style="font-size:18px;">💰</span></div>
         <div class="stat-val" id="sNetRev">$0</div>
-        <div class="flex gap8 ic mt8">
+        <div class="flex gap6 ic mt6">
           <span style="font-size:10px;color:var(--soft);">Meta:</span>
-          <input id="metaMes" type="number" style="width:68px;border:none;border-bottom:1px solid var(--border);background:transparent;font-size:12px;outline:none;color:var(--charcoal);" placeholder="$0" onchange="saveMeta()">
-          <span style="font-size:11px;" id="metaPct"></span>
+          <input id="metaMes" type="number" onclick="event.stopPropagation()" style="width:60px;border:none;border-bottom:1px solid var(--border);background:transparent;font-size:12px;outline:none;color:var(--charcoal);" placeholder="$0" onchange="saveMeta()">
+          <span style="font-size:11px;font-weight:700;" id="metaPct"></span>
         </div>
       </div>
     </div>
     <div class="g3 mb14">
-      <div class="stat" style="border-left:3px solid var(--wine-light);"><div class="stat-lbl">Ingresos Brutos</div><div class="stat-val text-wine" id="sIngBruto">$0</div><div class="stat-sub">Ventas del mes</div></div>
-      <div class="stat" style="border-left:3px solid var(--gold);"><div class="stat-lbl">Gastos Fijos</div><div class="stat-val" style="color:var(--gold);" id="sGastosFijos">$0</div><div class="stat-sub">Costos operativos</div></div>
-      <div class="stat" style="border-left:3px solid var(--soft);"><div class="stat-lbl">Compras Aprobadas</div><div class="stat-val" style="color:var(--soft);" id="sCompras">$0</div><div class="stat-sub">Inventario</div></div>
+      <div class="stat" onclick="go('clientes')" style="cursor:pointer;border-left:3px solid var(--wine-light);">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Ingresos Brutos</div><span style="font-size:16px;">📈</span></div>
+        <div class="stat-val text-wine" id="sIngBruto">$0</div>
+        <div class="flex jb ic mt6"><div class="stat-sub">Ventas del mes</div><div id="trendIngBruto" style="font-size:11px;font-weight:600;"></div></div>
+      </div>
+      <div class="stat" onclick="go('inventario')" style="cursor:pointer;border-left:3px solid var(--gold);">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Gastos Fijos</div><span style="font-size:16px;">🧾</span></div>
+        <div class="stat-val" style="color:var(--gold);" id="sGastosFijos">$0</div>
+        <div class="stat-sub mt6">Costos operativos</div>
+      </div>
+      <div class="stat" onclick="go('inventario')" style="cursor:pointer;border-left:3px solid var(--soft);">
+        <div class="flex jb ic mb4"><div class="stat-lbl">Compras Aprobadas</div><span style="font-size:16px;">🛍️</span></div>
+        <div class="stat-val" style="color:var(--soft);" id="sCompras">$0</div>
+        <div class="stat-sub mt6">Inventario</div>
+      </div>
     </div>
     <div class="g2 mb14">
       <div class="card">
@@ -663,7 +688,7 @@ input[type=range]{accent-color:var(--wine);}
     <div class="sh mb14"><div class="st">Made by MALA ✨</div><button class="btn btn-o btn-sm" onclick="openModal('modWorkUpload')">📸 Cargar trabajo</button></div>
     <p class="muted mb14">Hover para ver la inspiración. Sube tu trabajo terminado.</p>
     <div class="gallery" id="galleryGrid"></div>
-    <div id="galleryEmpty" class="card" style="padding:40px;text-align:center;display:none;"><div style="font-size:38px;margin-bottom:8px;">🖼️</div><div class="muted italic">Las fotos aparecerán al agendar citas con imagen de inspiración.</div></div>
+    <div id="galleryEmpty" class="card" style="padding:48px;text-align:center;display:none;"><div style="font-size:46px;margin-bottom:12px;">🖼️</div><div class="fancy" style="font-size:18px;color:var(--wine);margin-bottom:6px;">Tu galería está vacía</div><div class="muted">Sube tu primer trabajo con el botón <strong>📸 Cargar trabajo</strong> arriba.</div></div>
   </div>
 
   <!-- SOCIAL -->
@@ -1004,14 +1029,14 @@ input[type=range]{accent-color:var(--wine);}
 <!-- Work Upload -->
 <div class="overlay" id="modWorkUpload">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Cargar Trabajo Terminado</div><button class="close-btn" onclick="closeModal('modWorkUpload')">✕</button></div>
-    <div class="fg"><label class="flbl">Seleccionar cita</label><select class="fs" id="workCitaSel"></select></div>
+    <div class="modal-hdr"><div class="modal-title">📸 Subir a Galería</div><button class="close-btn" onclick="closeModal('modWorkUpload')">✕</button></div>
+    <div class="fg"><label class="flbl">Título / descripción</label><input class="fi" id="workTitulo" placeholder="ej: Softgel nude · Mayo 2026"></div>
     <div class="fg"><label class="flbl">Foto del trabajo</label>
       <input type="file" id="workFile" accept="image/*" style="display:none" onchange="previewWork(this)">
-      <div class="drop-zone" onclick="document.getElementById('workFile').click()">📷 Cargar foto del trabajo</div>
-      <div id="workPreview" style="margin-top:8px;display:none;"><img id="workImg" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;"></div>
+      <div class="drop-zone" onclick="document.getElementById('workFile').click()">📷 Seleccionar foto</div>
+      <div id="workPreview" style="margin-top:10px;display:none;"><img id="workImg" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;"></div>
     </div>
-    <button class="btn btn-r fw100" onclick="guardarWork()">💾 Guardar</button>
+    <button class="btn btn-r fw100" onclick="guardarWork()">✨ Subir a galería</button>
   </div>
 </div>
 
@@ -1354,23 +1379,55 @@ function renderWeekPreview(){
 }
 
 // ── HOME ──
+function trendBadge(curr, prev){
+  if(!prev||!curr) return '';
+  const pct = Math.round((curr-prev)/prev*100);
+  if(pct===0) return '<span style="color:var(--soft);">— igual</span>';
+  const up=pct>0;
+  return `<span style="color:${up?'#2D6A4F':'#c0392b'};">${up?'▲':'▼'} ${Math.abs(pct)}%</span>`;
+}
 function refreshHome(){
   const now=nowEC(), today=now.toISOString().split('T')[0], month=today.slice(0,7);
+  // Mes anterior para tendencias
+  const prevD=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const prevMonth=prevD.toISOString().slice(0,7);
+
   const realized = DB.citas.filter(c=>c.status==='realizada');
   const cancelled = DB.citas.filter(c=>c.status==='cancelada');
   const mesReal = realized.filter(c=>c.fecha.startsWith(month));
+  const prevReal = realized.filter(c=>c.fecha.startsWith(prevMonth));
   const ingMes = DB.ventas.filter(v=>v.fecha.startsWith(month)).reduce((a,v)=>a+parseFloat(v.precio||0),0);
+  const ingPrev = DB.ventas.filter(v=>v.fecha.startsWith(prevMonth)).reduce((a,v)=>a+parseFloat(v.precio||0),0);
   const gastosFijos = DB.gastos.reduce((a,g)=>a+parseFloat(g.valor||0),0);
   const comprasAprob = DB.compras.filter(c=>c.aprobada).reduce((a,c)=>a+parseFloat(c.valor||0),0);
   const net = Math.max(0,ingMes-gastosFijos-comprasAprob);
+
+  // Clientes nuevos este mes vs mes anterior
+  const cliMes = DB.clientes.filter(c=>(c.created_at||'').startsWith(month)).length;
+  const cliPrev = DB.clientes.filter(c=>(c.created_at||'').startsWith(prevMonth)).length;
+
   const set = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  set('sCitasHoy', DB.citas.filter(c=>c.fecha===today&&c.status!=='cancelada').length);
+  const setH = (id,html) => { const el=document.getElementById(id); if(el) el.innerHTML=html; };
+
+  const citasHoy = DB.citas.filter(c=>c.fecha===today&&c.status!=='cancelada').length;
+  set('sCitasHoy', citasHoy);
   set('sServMes', mesReal.length);
   set('sClientesMes', DB.clientes.length);
   set('sNetRev', '$'+net.toFixed(0));
   set('sIngBruto', '$'+ingMes.toFixed(0));
   set('sGastosFijos', '$'+gastosFijos.toFixed(0));
   set('sCompras', '$'+comprasAprob.toFixed(0));
+
+  // Tendencias
+  setH('trendServMes', trendBadge(mesReal.length, prevReal.length));
+  setH('trendIngBruto', trendBadge(ingMes, ingPrev));
+  setH('trendClientes', cliMes||cliPrev ? trendBadge(cliMes, cliPrev) : '');
+  // Citas hoy: comparar con mismo día de semana pasada
+  const lwDate=new Date(now); lwDate.setDate(lwDate.getDate()-7);
+  const lwStr=lwDate.toISOString().split('T')[0];
+  const lwCitas=DB.citas.filter(c=>c.fecha===lwStr&&c.status!=='cancelada').length;
+  setH('trendCitasHoy', trendBadge(citasHoy, lwCitas));
+
   const meta = DB.config.meta_mes||0;
   const mm = document.getElementById('metaMes'); if(mm) mm.value = meta||'';
   set('metaPct', meta?(Math.round(ingMes/meta*100)+'%'):'');
@@ -1647,19 +1704,33 @@ function refreshAgenda(){
 }
 function aptCard(c,isProx){
   const badge=c.status==='realizada'?'<span class="badge b-green">Realizada</span>':c.status==='cancelada'?'<span class="badge b-gray">Cancelada</span>':'<span class="badge b-wine">Pendiente</span>';
-  return`<div class="apt-card ${c.status==='realizada'?'done':c.status==='cancelada'?'cancelled':''}" onclick="${isProx?'selectCitaWA(\''+c.id+'\')':'inspeccionarCita(\''+c.id+'\')'}">
+  const isSel=isProx&&c.id===selectedCitaId;
+  return`<div class="apt-card ${c.status==='realizada'?'done':c.status==='cancelada'?'cancelled':''} ${isSel?'wa-selected':''}" onclick="${isProx?'selectCitaWA(\''+c.id+'\')':'inspeccionarCita(\''+c.id+'\')'}">
     <div class="apt-time">📅 ${c.fecha} · ⏰ ${c.hora}${c.empleada?' · 👩 '+c.empleada:''}</div>
-    <div class="flex ic jb"><div class="apt-client">${c.cliente_nombre}</div>${badge}</div>
+    <div class="flex ic jb"><div class="apt-client">${c.cliente_nombre}</div><div class="flex gap6 ic">${isSel?'<span style="font-size:14px;">💬</span>':''}${badge}</div></div>
     <div class="apt-svc">${c.servicio}${c.valor?' · $'+c.valor:''}</div>
     ${c.notas?`<div class="muted" style="font-size:11px;margin-top:2px;">📝 ${c.notas}</div>`:''}
-    ${isProx?`<div class="flex gap8 mt8">
+    ${isProx?`<div class="flex gap8 mt8 ic">
       <button class="btn btn-g btn-sm" onclick="event.stopPropagation();setCitaStatus('${c.id}','realizada')">✅ Realizada</button>
       <button class="btn btn-o btn-sm" style="color:var(--wine-light);" onclick="event.stopPropagation();setCitaStatus('${c.id}','cancelada')">✕ Cancelar</button>
+      ${isSel?'<span style="font-size:10px;color:var(--wine);font-weight:600;">✓ Para WA</span>':'<span style="font-size:10px;color:var(--soft);">Toca para seleccionar en WA</span>'}
     </div>`:'<div class="muted" style="font-size:10px;margin-top:4px;color:var(--wine-light);">🔍 Clic para inspeccionar</div>'}
   </div>`;
 }
 let selectedCitaId=null;
-function selectCitaWA(id){selectedCitaId=id;const c=DB.citas.find(x=>x.id===id);if(!c)return;const el=document.getElementById('waSelectedCita');if(el){el.style.display='block';el.innerHTML=`<strong>Seleccionada:</strong> ${c.cliente_nombre} · ${c.fecha} ${c.hora}`;}}
+function selectCitaWA(id){
+  selectedCitaId=id;
+  const c=DB.citas.find(x=>x.id===id); if(!c) return;
+  const el=document.getElementById('waSelectedCita');
+  if(el){
+    el.style.display='block';
+    el.innerHTML=`<span style="color:var(--wine);font-weight:700;">💬 Cita seleccionada:</span> <strong>${c.cliente_nombre}</strong> · ${c.fecha} ${c.hora} · ${c.servicio}`;
+  }
+  // Re-renderizar tarjetas para mostrar estado seleccionado visualmente
+  const prox=DB.citas.filter(x=>x.status==='pendiente').sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
+  const ap=document.getElementById('agendaProximas');
+  if(ap) ap.innerHTML=prox.length?prox.map(x=>aptCard(x,true)).join(''):'<div class="muted italic mb14">Sin próximas citas.</div>';
+}
 async function setCitaStatus(id,status){
   const c=DB.citas.find(x=>x.id===id); if(!c) return;
   try {
@@ -1806,34 +1877,48 @@ function chkWA(id){const c=DB.checklist.find(x=>x.id===id);if(!c)return;window.o
 function refreshGallery(){
   const grid=document.getElementById('galleryGrid'),empty=document.getElementById('galleryEmpty');
   if(!grid||!empty) return;
-  if(!DB.imagenes.length){grid.style.display='none';empty.style.display='block';return;}
+  // Mostrar solo entradas con work_url (fotos reales subidas)
+  const fotos=DB.imagenes.filter(i=>i.work_url);
+  if(!fotos.length){grid.style.display='none';empty.style.display='block';return;}
   grid.style.display='grid';empty.style.display='none';
-  grid.innerHTML=DB.imagenes.map(img=>`<div class="gal-item">
-    ${img.work_url?`<img class="gal-work" src="${img.work_url}" alt="${img.cliente_nombre}">`:''}
-    <img class="gal-inspo" src="${img.inspo_url}" alt="${img.cliente_nombre}">
-    <div class="gal-upload-overlay"><span style="color:#fff;font-size:13px;">📷 Cargar trabajo</span></div>
-    <div class="gal-cap">${img.cliente_nombre}<br><span style="font-size:9.5px;opacity:.8;">${img.fecha_cita||''}</span></div>
+  grid.innerHTML=fotos.map(img=>`<div class="gal-item">
+    <img class="gal-work" src="${img.work_url}" alt="${img.cliente_nombre||''}" style="opacity:1;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:2;">
+    <div class="gal-upload-overlay">
+      <button onclick="event.stopPropagation();deleteGalleryImg('${img.id}')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.45);color:#fff;border-radius:9px;padding:7px 14px;cursor:pointer;font-size:12px;font-family:inherit;backdrop-filter:blur(4px);">🗑 Eliminar</button>
+    </div>
+    <div class="gal-cap">${img.cliente_nombre||'Sin título'}<br><span style="font-size:9.5px;opacity:.8;">${img.fecha_cita||''}</span></div>
   </div>`).join('');
+}
+async function deleteGalleryImg(id){
+  if(!confirm('¿Eliminar esta foto de la galería?')) return;
+  try {
+    await SB.from('imagenes').delete().eq('id',id);
+    DB.imagenes=DB.imagenes.filter(i=>i.id!==id);
+    refreshGallery(); toast('🗑 Foto eliminada');
+  } catch(e){ toast('❌ '+e.message); }
 }
 function previewWork(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{document.getElementById('workImg').src=e.target.result;document.getElementById('workPreview').style.display='block';};r.readAsDataURL(f);}
 async function guardarWork(){
-  const selId=document.getElementById('workCitaSel').value;
+  const titulo=(document.getElementById('workTitulo').value||'').trim()||'Sin título';
   const imgSrc=document.getElementById('workImg').src;
-  if(!imgSrc.startsWith('data:')){toast('⚠️ Carga una imagen primero');return;}
-  const entry=DB.imagenes.find(i=>i.id===selId);
-  if(!entry){toast('⚠️ Selecciona una cita');return;}
+  if(!imgSrc.startsWith('data:')){toast('⚠️ Selecciona una imagen primero');return;}
   try {
     const ext=imgSrc.split(';')[0].split('/')[1]||'jpg';
-    const fname=`work_${Date.now()}.${ext}`;
+    const fname=`gallery_${Date.now()}.${ext}`;
     const base64Data=imgSrc.split(',')[1];
     const byteArr=Uint8Array.from(atob(base64Data),c=>c.charCodeAt(0));
     const {error:upErr}=await SB.storage.from('mala-images').upload(fname,byteArr.buffer,{contentType:'image/'+ext,upsert:true});
     if(upErr) throw upErr;
     const {data:urlData}=SB.storage.from('mala-images').getPublicUrl(fname);
     const work_url=urlData.publicUrl||'';
-    await SB.from('imagenes').update({work_url}).eq('id',selId);
-    entry.work_url=work_url;
-    closeModal('modWorkUpload'); refreshGallery(); toast('✅ Trabajo guardado');
+    const today=new Date().toISOString().split('T')[0];
+    const {data,error}=await SB.from('imagenes').insert([{cliente_nombre:titulo,work_url,fecha_cita:today}]).select();
+    if(error) throw error;
+    DB.imagenes.unshift(data[0]);
+    document.getElementById('workTitulo').value='';
+    document.getElementById('workPreview').style.display='none';
+    document.getElementById('workImg').src='';
+    closeModal('modWorkUpload'); refreshGallery(); toast('✨ Subido a la galería');
   } catch(e){ toast('❌ '+e.message); }
 }
 
