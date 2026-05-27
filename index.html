@@ -693,42 +693,41 @@ input[type=range]{accent-color:var(--wine);}
 
   <!-- SOCIAL -->
   <div class="panel" id="panel-social">
-    <div class="bento">
-      <div class="bento-wide" style="background:linear-gradient(135deg,var(--wine) 0%,var(--wine-mid) 60%,#833ab4);border-radius:14px;padding:22px 26px;color:#fff;">
-        <div style="font-size:10px;opacity:0.6;letter-spacing:1.5px;font-weight:600;">@hechasenmala</div>
-        <div class="fancy" style="font-size:28px;font-weight:300;margin:4px 0;">Hecho en MALA</div>
-        <div style="font-size:11px;opacity:0.5;margin-bottom:16px;">Conectar Business Account para datos exactos</div>
-        <div class="flex gap14">
-          <div style="text-align:center;"><div style="font-size:24px;font-weight:300;">4.2K</div><div style="font-size:9px;opacity:0.6;letter-spacing:1px;text-transform:uppercase;">Seguidores</div></div>
-          <div style="text-align:center;"><div style="font-size:24px;font-weight:300;">187</div><div style="font-size:9px;opacity:0.6;letter-spacing:1px;text-transform:uppercase;">Posts</div></div>
-          <div style="text-align:center;"><div style="font-size:24px;font-weight:300;">8.4%</div><div style="font-size:9px;opacity:0.6;letter-spacing:1px;text-transform:uppercase;">Engagement</div></div>
+
+    <!-- Paso 1: Sin conectar → mostrar guía de setup -->
+    <div id="igSetupCard" class="card mb14" style="display:none;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📷</div>
+        <div><div class="card-title" style="margin:0;">Conectar Instagram</div><div class="muted" style="font-size:12px;">Muestra tu feed en tiempo real gratis con Behold.so</div></div>
+      </div>
+      <div style="background:rgba(131,58,180,0.05);border:1px solid rgba(131,58,180,0.18);border-radius:12px;padding:16px 18px;margin-bottom:16px;font-size:13.5px;line-height:2.1;color:var(--charcoal);">
+        <div><strong style="color:var(--wine);">1.</strong> Ve a <a href="https://behold.so" target="_blank" style="color:var(--wine);font-weight:600;">behold.so</a> y crea una cuenta <span class="muted">(gratis)</span></div>
+        <div><strong style="color:var(--wine);">2.</strong> Haz clic en <strong>"Create feed"</strong> y conecta tu cuenta <strong>@hechasenmala</strong></div>
+        <div><strong style="color:var(--wine);">3.</strong> En tu dashboard de Behold, copia el <strong>Feed ID</strong> <span class="muted">(ej: AbCdEfGh12…)</span></div>
+        <div><strong style="color:var(--wine);">4.</strong> Pégalo aquí 👇 y haz clic en <strong>Conectar</strong></div>
+      </div>
+      <div class="flex gap8">
+        <input class="fi f1" id="beholdIdInput" placeholder="Pega tu Feed ID de Behold.so aquí...">
+        <button class="btn btn-r" onclick="saveBeholdId()">🔗 Conectar</button>
+      </div>
+    </div>
+
+    <!-- Feed conectado -->
+    <div id="igFeedSection" style="display:none;">
+      <div class="sh mb14">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#f09433,#dc2743,#bc1888);display:flex;align-items:center;justify-content:center;font-size:16px;">📷</div>
+          <div class="st">Instagram · @hechasenmala</div>
         </div>
+        <button class="btn btn-o btn-sm" onclick="disconnectIG()">⚙️ Cambiar</button>
       </div>
-      <div class="card">
-        <div class="card-title">🔔 Interacciones</div>
-        <div style="font-size:13px;line-height:1.8;">
-          <div style="padding:5px 0;border-bottom:1px solid var(--border);">❤️ <strong>1.2K</strong> likes en último reel · <span class="muted">2h</span></div>
-          <div style="padding:5px 0;border-bottom:1px solid var(--border);">💬 @nails.ec: "¿Cuánto el softgel?" · <span class="muted">3h</span></div>
-          <div style="padding:5px 0;">👤 <strong>+12</strong> nuevos seguidores · <span class="muted">hoy</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📈 Alcance Semanal</div>
-        <div class="bar-chart">
-          <div class="bc"><div class="b" style="height:50%"></div><div class="bl">L</div></div>
-          <div class="bc"><div class="b" style="height:70%"></div><div class="bl">M</div></div>
-          <div class="bc"><div class="b" style="height:45%"></div><div class="bl">Mi</div></div>
-          <div class="bc"><div class="b" style="height:90%"></div><div class="bl">J</div></div>
-          <div class="bc"><div class="b" style="height:80%"></div><div class="bl">V</div></div>
-          <div class="bc"><div class="b" style="height:100%"></div><div class="bl">S</div></div>
-          <div class="bc"><div class="b" style="height:55%"></div><div class="bl">D</div></div>
-        </div>
-        <div class="muted mt8">Mejor día: Sábado · Hora pico: 7–9pm</div>
-      </div>
-      <div class="card bento-wide">
-        <div class="sh"><div class="card-title">📅 Calendario de Publicación</div><button class="btn btn-r btn-sm" onclick="openModal('modPub')">+ Agregar</button></div>
-        <div id="pubList"></div>
-      </div>
+      <div id="beholdWidget" style="margin-bottom:20px;min-height:200px;border-radius:14px;overflow:hidden;"></div>
+    </div>
+
+    <!-- Calendario de publicación (siempre visible) -->
+    <div class="card">
+      <div class="sh"><div class="card-title">📅 Calendario de Publicación</div><button class="btn btn-r btn-sm" onclick="openModal('modPub')">+ Agregar</button></div>
+      <div id="pubList"></div>
     </div>
   </div>
 
@@ -1059,7 +1058,7 @@ let DB = {
   imagenes:[], notificaciones:[],
   asistencias:{},
   config:{ meta_mes:0, comisiones:{}, servicios_config:null,
-    msg_templates:[] }
+    msg_templates:[], ig_behold_id: null }
 };
 
 // ── SERVICES LIST ──
@@ -1216,6 +1215,7 @@ async function loadAllData() {
   DB.config.comisiones = cfgMap.comisiones || {Softgel:5,'Baño de polygel':6,'Extensión con polygel':6};
   DB.config.servicios_config = cfgMap.servicios_config || null;
   DB.config.msg_templates = Array.isArray(cfgMap.msg_templates) ? cfgMap.msg_templates : DEFAULT_TEMPLATES;
+  DB.config.ig_behold_id = cfgMap.ig_behold_id || null;
 }
 
 async function saveConfig_(key, value) {
@@ -1231,6 +1231,7 @@ function initUI() {
   populateSvcDrops();
   renderNotifs();
   renderPubs();
+  renderSocial();
   refreshHome();
   initLogoUpload();
   document.querySelectorAll('.overlay').forEach(m =>
@@ -1308,8 +1309,9 @@ let _currentPanel = 'home';
 const PANEL_FNS = () => ({
   home:refreshHome, clientes:refreshClientes, agenda:refreshAgenda,
   inventario:refreshInventario, madebymala:refreshGallery,
-  embajadoras:refreshEmbajadoras, empleados:()=>renderEmpleados(),
-  calendario:renderCalendar, mensajes:renderMensajes, tips:()=>{}
+  social:renderSocial, embajadoras:refreshEmbajadoras,
+  empleados:()=>renderEmpleados(), calendario:renderCalendar,
+  mensajes:renderMensajes, tips:()=>{}
 });
 
 // Recarga datos de Supabase y re-renderiza el panel activo sin cambiar de vista
@@ -1923,6 +1925,61 @@ async function guardarWork(){
 }
 
 // ── SOCIAL ──
+function renderSocial(){
+  const feedId = DB.config.ig_behold_id;
+  const setup = document.getElementById('igSetupCard');
+  const feed  = document.getElementById('igFeedSection');
+  const widget= document.getElementById('beholdWidget');
+  if(!setup||!feed||!widget) return;
+
+  if(!feedId){
+    setup.style.display='block';
+    feed.style.display='none';
+  } else {
+    setup.style.display='none';
+    feed.style.display='block';
+    // Inyectar widget Behold solo una vez (evitar duplicados)
+    if(!widget.querySelector('behold-widget')){
+      widget.innerHTML=`<behold-widget feed-id="${feedId}"></behold-widget>`;
+      // Cargar script de Behold.so dinámicamente si no está
+      if(!document.querySelector('script[src*="behold.so"]')){
+        const s=document.createElement('script');
+        s.src='https://w.behold.so/widget.js';
+        s.type='module';
+        document.head.appendChild(s);
+      }
+    }
+  }
+  renderPubs();
+}
+
+async function saveBeholdId(){
+  const id=(document.getElementById('beholdIdInput').value||'').trim();
+  if(!id){toast('⚠️ Pega tu Feed ID de Behold.so');return;}
+  try {
+    await saveConfig_('ig_behold_id', id);
+    DB.config.ig_behold_id=id;
+    // Limpiar widget anterior si existía y reconectar
+    const w=document.getElementById('beholdWidget');
+    if(w) w.innerHTML='';
+    toast('✅ Instagram conectado 🎉');
+    renderSocial();
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+async function disconnectIG(){
+  if(!confirm('¿Desconectar Instagram?')) return;
+  try {
+    await saveConfig_('ig_behold_id', null);
+    DB.config.ig_behold_id=null;
+    const w=document.getElementById('beholdWidget');
+    if(w) w.innerHTML='';
+    document.getElementById('beholdIdInput').value='';
+    renderSocial();
+    toast('🔌 Instagram desconectado');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
 async function guardarPub(){
   const t=document.getElementById('pubTitulo').value.trim(); if(!t) return;
   const obj={titulo:t,fecha:document.getElementById('pubFecha').value||null,tipo:document.getElementById('pubTipo').value,notas:document.getElementById('pubNotas').value,done:false,subtareas:[]};
