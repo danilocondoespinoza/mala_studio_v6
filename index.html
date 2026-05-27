@@ -235,6 +235,7 @@ tr:hover td{background:rgba(186,208,231,0.08);}
 .cal-ev{font-size:8.5px;border-radius:3px;padding:1px 4px;margin-bottom:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 .ev-appt{background:#F0E8EC;color:var(--wine);}
 .ev-pub{background:var(--ice-light);color:var(--wine-mid);}
+.ev-ret{background:#FFF3CD;color:#8a6000;border-left:2px solid #f0a500;}
 
 /* ── AGENDA CARD ── */
 .apt-card{background:rgba(255,255,255,0.65);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--wine-pale);transition:all 0.2s;}
@@ -724,6 +725,32 @@ input[type=range]{accent-color:var(--wine);}
       <div id="beholdWidget" style="margin-bottom:20px;min-height:200px;border-radius:14px;overflow:hidden;"></div>
     </div>
 
+    <!-- Metricool + Métricas manuales -->
+    <div class="g2 mb14">
+      <!-- Acceso rápido Metricool -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(0,180,216,0.08),rgba(0,119,182,0.06));border:1px solid rgba(0,180,216,0.25);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#00b4d8,#0077b6);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,119,182,0.3);">📊</div>
+          <div><div style="font-weight:700;font-size:15px;color:#0077b6;">Metricool</div><div class="muted" style="font-size:11px;">Analytics externo</div></div>
+        </div>
+        <p class="muted mb14" style="font-size:13px;line-height:1.7;">Accede a tu dashboard completo de analíticas, programación y reportes.</p>
+        <a href="https://app.metricool.com" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;padding:11px 18px;border-radius:11px;text-decoration:none;font-size:14px;font-weight:600;box-shadow:0 4px 14px rgba(0,119,182,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+          🚀 Abrir Metricool
+        </a>
+      </div>
+
+      <!-- Resumen de última actualización manual -->
+      <div class="card">
+        <div class="sh mb12">
+          <div class="card-title">📈 Últimas Métricas</div>
+          <button class="btn btn-o btn-sm" onclick="openModal('modSocialStats')">✏️ Actualizar</button>
+        </div>
+        <div id="socialStatsDisplay">
+          <div class="muted italic" style="font-size:13px;text-align:center;padding:20px 0;">Sin datos — haz clic en <strong>✏️ Actualizar</strong> para ingresar tus métricas.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Calendario de publicación (siempre visible) -->
     <div class="card">
       <div class="sh"><div class="card-title">📅 Calendario de Publicación</div><button class="btn btn-r btn-sm" onclick="openModal('modPub')">+ Agregar</button></div>
@@ -771,6 +798,7 @@ input[type=range]{accent-color:var(--wine);}
     <div class="card"><div class="cal-grid mb14" id="calDayHdrs"></div><div id="calGrid"></div></div>
     <div class="flex gap8 mt8 ic fw">
       <span class="cal-ev ev-appt" style="font-size:11px;padding:2px 9px;">🌸 Cita</span>
+      <span class="cal-ev ev-ret" style="font-size:11px;padding:2px 9px;">✂️ Retoque</span>
       <span class="cal-ev ev-pub" style="font-size:11px;padding:2px 9px;">✨ Publicación</span>
     </div>
   </div>
@@ -943,6 +971,33 @@ input[type=range]{accent-color:var(--wine);}
 </div>
 
 <!-- Publicación -->
+<div class="overlay" id="modSocialStats">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hdr"><div class="modal-title">📈 Actualizar Métricas de Instagram</div><button class="close-btn" onclick="closeModal('modSocialStats')">✕</button></div>
+    <p class="muted mb14" style="font-size:13px;">Copia estos datos desde tu Metricool y guárdalos aquí. Se guardan con fecha para construir tu historial.</p>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Seguidores</label><input class="fi" id="ss_followers" type="number" placeholder="ej: 4200"></div>
+      <div class="fg"><label class="flbl">Posts publicados</label><input class="fi" id="ss_posts" type="number" placeholder="ej: 187"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Engagement rate (%)</label><input class="fi" id="ss_engagement" type="number" step="0.1" placeholder="ej: 8.4"></div>
+      <div class="fg"><label class="flbl">Alcance promedio / post</label><input class="fi" id="ss_reach" type="number" placeholder="ej: 1200"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Likes promedio / post</label><input class="fi" id="ss_likes" type="number" placeholder="ej: 340"></div>
+      <div class="fg"><label class="flbl">Comentarios promedio / post</label><input class="fi" id="ss_comments" type="number" placeholder="ej: 14"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Mejor día para publicar</label>
+        <select class="fs" id="ss_bestday"><option value="">— Seleccionar —</option><option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option><option>Domingo</option></select>
+      </div>
+      <div class="fg"><label class="flbl">Hora pico</label><input class="fi" id="ss_besthour" placeholder="ej: 7–9pm"></div>
+    </div>
+    <div class="fg"><label class="flbl">Nota del período</label><input class="fi" id="ss_note" placeholder="ej: Mayo — lanzamiento chrome nails"></div>
+    <button class="btn btn-r fw100 mt14" onclick="guardarSocialStats()">💾 Guardar métricas</button>
+  </div>
+</div>
+
 <div class="overlay" id="modPub">
   <div class="modal" style="max-width:540px;">
     <div class="modal-hdr"><div class="modal-title">Nueva Publicación</div><button class="close-btn" onclick="closeModal('modPub')">✕</button></div>
@@ -1058,7 +1113,7 @@ let DB = {
   imagenes:[], notificaciones:[],
   asistencias:{},
   config:{ meta_mes:0, comisiones:{}, servicios_config:null,
-    msg_templates:[], ig_behold_id: null }
+    msg_templates:[], ig_behold_id: null, social_stats: [] }
 };
 
 // ── SERVICES LIST ──
@@ -1216,6 +1271,7 @@ async function loadAllData() {
   DB.config.servicios_config = cfgMap.servicios_config || null;
   DB.config.msg_templates = Array.isArray(cfgMap.msg_templates) ? cfgMap.msg_templates : DEFAULT_TEMPLATES;
   DB.config.ig_behold_id = cfgMap.ig_behold_id || null;
+  DB.config.social_stats = Array.isArray(cfgMap.social_stats) ? cfgMap.social_stats : [];
 }
 
 async function saveConfig_(key, value) {
@@ -1232,6 +1288,7 @@ function initUI() {
   renderNotifs();
   renderPubs();
   renderSocial();
+  renderSocialStats();
   refreshHome();
   initLogoUpload();
   document.querySelectorAll('.overlay').forEach(m =>
@@ -1980,6 +2037,82 @@ async function disconnectIG(){
   } catch(e){ toast('❌ '+e.message); }
 }
 
+async function guardarSocialStats(){
+  const get = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
+  const entry = {
+    fecha: new Date().toISOString().split('T')[0],
+    followers:  parseInt(get('ss_followers'))||0,
+    posts:      parseInt(get('ss_posts'))||0,
+    engagement: parseFloat(get('ss_engagement'))||0,
+    reach:      parseInt(get('ss_reach'))||0,
+    likes:      parseInt(get('ss_likes'))||0,
+    comments:   parseInt(get('ss_comments'))||0,
+    bestday:    get('ss_bestday'),
+    besthour:   get('ss_besthour'),
+    note:       get('ss_note'),
+  };
+  if(!entry.followers && !entry.posts){ toast('⚠️ Ingresa al menos seguidores o posts'); return; }
+  // Prepend to history, keep last 12 entries
+  const history = [entry, ...(DB.config.social_stats||[])].slice(0,12);
+  DB.config.social_stats = history;
+  try {
+    await saveConfig_('social_stats', history);
+    closeModal('modSocialStats');
+    renderSocialStats();
+    toast('✅ Métricas guardadas');
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+function renderSocialStats(){
+  const el = document.getElementById('socialStatsDisplay'); if(!el) return;
+  const stats = DB.config.social_stats;
+  if(!stats||!stats.length){
+    el.innerHTML='<div class="muted italic" style="font-size:13px;text-align:center;padding:20px 0;">Sin datos — haz clic en <strong>✏️ Actualizar</strong> para ingresar tus métricas.</div>';
+    return;
+  }
+  const s = stats[0]; // Most recent
+  const prev = stats[1]; // Previous for trend
+  const tr = (curr,old,suffix='') => {
+    if(!old||!curr) return '';
+    const d=curr-old; if(d===0) return '';
+    return `<span style="font-size:10px;font-weight:700;color:${d>0?'#2D6A4F':'#c0392b'};margin-left:4px;">${d>0?'▲':'▼'}${Math.abs(d)}${suffix}</span>`;
+  };
+  el.innerHTML=`
+    <div style="font-size:10px;color:var(--soft);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Actualizado ${s.fecha}${s.note?' · '+s.note:''}</div>
+    <div class="g2" style="gap:10px;margin-bottom:10px;">
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">Seguidores</div>
+        <div style="font-size:22px;font-family:'Cormorant Garamond',serif;color:var(--wine);font-weight:300;">${s.followers.toLocaleString()}${tr(s.followers,prev?.followers)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">Engagement</div>
+        <div style="font-size:22px;font-family:'Cormorant Garamond',serif;color:var(--wine);font-weight:300;">${s.engagement}%${tr(s.engagement,prev?.engagement,'%')}</div>
+      </div>
+    </div>
+    <div class="g2" style="gap:10px;margin-bottom:10px;">
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">❤️ Likes prom.</div>
+        <div style="font-size:20px;font-family:'Cormorant Garamond',serif;color:var(--charcoal);font-weight:300;">${s.likes.toLocaleString()}${tr(s.likes,prev?.likes)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">💬 Comentarios prom.</div>
+        <div style="font-size:20px;font-family:'Cormorant Garamond',serif;color:var(--charcoal);font-weight:300;">${s.comments.toLocaleString()}${tr(s.comments,prev?.comments)}</div>
+      </div>
+    </div>
+    <div class="g2" style="gap:10px;">
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">📡 Alcance prom.</div>
+        <div style="font-size:20px;font-family:'Cormorant Garamond',serif;color:var(--charcoal);font-weight:300;">${s.reach.toLocaleString()}${tr(s.reach,prev?.reach)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.6);border-radius:10px;padding:11px 13px;">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);margin-bottom:4px;">⭐ Mejor momento</div>
+        <div style="font-size:14px;font-weight:600;color:var(--charcoal);margin-top:4px;">${s.bestday||'—'} ${s.besthour?'· '+s.besthour:''}</div>
+      </div>
+    </div>
+    ${stats.length>1?`<div style="margin-top:12px;font-size:11px;color:var(--soft);text-align:right;cursor:pointer;" onclick="openModal('modStatsHistory')">Ver historial (${stats.length} registros) →</div>`:''}
+  `;
+}
+
 async function guardarPub(){
   const t=document.getElementById('pubTitulo').value.trim(); if(!t) return;
   const obj={titulo:t,fecha:document.getElementById('pubFecha').value||null,tipo:document.getElementById('pubTipo').value,notas:document.getElementById('pubNotas').value,done:false,subtareas:[]};
@@ -2140,7 +2273,15 @@ function renderCalendar(){
 }
 function buildEvMap(){
   const evMap={};
-  DB.citas.filter(c=>c.status!=='cancelada').forEach(c=>{(evMap[c.fecha]=evMap[c.fecha]||[]).push({type:'ev-appt',label:c.cliente_nombre+' '+c.hora});});
+  DB.citas.filter(c=>c.status!=='cancelada').forEach(c=>{
+    // Cita original
+    (evMap[c.fecha]=evMap[c.fecha]||[]).push({type:'ev-appt',label:c.cliente_nombre+(c.hora?' '+c.hora:'')});
+    // Retoque automático 15 días después (solo para citas pendientes y realizadas)
+    const retDate=new Date(c.fecha+'T12:00:00');
+    retDate.setDate(retDate.getDate()+15);
+    const retStr=retDate.toISOString().split('T')[0];
+    (evMap[retStr]=evMap[retStr]||[]).push({type:'ev-ret',label:'✂️ '+c.cliente_nombre+' · Retoque'});
+  });
   DB.publicaciones.forEach(p=>{if(p.fecha)(evMap[p.fecha]=evMap[p.fecha]||[]).push({type:'ev-pub',label:p.tipo+' '+p.titulo});});
   return evMap;
 }
