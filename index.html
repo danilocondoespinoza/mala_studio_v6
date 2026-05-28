@@ -661,6 +661,7 @@ input[type=range]{accent-color:var(--wine);}
       <button class="tab active" onclick="invTab(this,'compras')">🛒 Compras</button>
       <button class="tab" onclick="invTab(this,'aprobacion')">⏳ Aprobación</button>
       <button class="tab" onclick="invTab(this,'gastos')">💸 Gastos Fijos</button>
+      <button class="tab" onclick="invTab(this,'transacciones')">💳 Transacciones</button>
       <button class="tab" onclick="invTab(this,'checklist')">✅ Checklist</button>
     </div>
     <div id="inv-compras"><div class="sh mb14"><div class="st">Compras Aprobadas</div><button class="btn btn-r btn-sm" onclick="openModal('modCompra')">+ Nueva</button></div><div id="comprasList"></div></div>
@@ -669,6 +670,25 @@ input[type=range]{accent-color:var(--wine);}
       <div class="sh mb14"><div class="st">Gastos Fijos</div><button class="btn btn-r btn-sm" onclick="openModal('modGasto')">+ Agregar</button></div>
       <div id="gastosList"></div>
       <div class="card mt14"><div class="card-title">Resumen Financiero</div><div class="flex jb ic mb8"><span class="muted">Gastos fijos / mes</span><span class="fancy" style="font-size:22px;" id="totalGastos">$0</span></div><div class="flex jb ic"><span class="muted">Compras aprobadas</span><span class="fancy" style="font-size:22px;" id="totalComprasAprob">$0</span></div></div>
+    </div>
+    <div id="inv-transacciones" style="display:none">
+      <div class="g2 mb14">
+        <div class="card">
+          <div class="card-title">💰 Caja Chica</div>
+          <div class="flex gap8 ic mt8">
+            <span class="muted">Monto asignado:</span>
+            <input class="fi" style="width:120px;" type="number" id="cajachicaInput" placeholder="$0" onchange="saveCajaChica()">
+            <span class="fancy" style="font-size:22px;color:var(--wine);" id="cajachicaDisplay">$0</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Resumen</div>
+          <div class="flex jb ic mb6"><span class="muted">Total transferencias</span><span id="totalTransf" style="font-weight:700;color:var(--wine);">$0</span></div>
+          <div class="flex jb ic"><span class="muted">Total efectivo</span><span id="totalEfect" style="font-weight:700;color:var(--green);">$0</span></div>
+        </div>
+      </div>
+      <div class="sh mb14"><div class="st">Historial de Transacciones</div><button class="btn btn-r btn-sm" onclick="openModal('modTransaccion')">+ Nueva</button></div>
+      <div id="transaccionesList"></div>
     </div>
     <div id="inv-checklist" style="display:none">
       <div class="sh mb14"><div class="st">Checklist</div></div>
@@ -872,21 +892,15 @@ input[type=range]{accent-color:var(--wine);}
     <div class="fg"><label class="flbl">Servicio</label><select class="fs" id="agServicio" onchange="calcAgAnticipo()"><option value="">— Seleccionar —</option></select></div>
     <div class="fg"><label class="flbl">Fecha</label><input class="fi" id="agFecha" type="date"></div>
     <div class="fg"><label class="flbl">Hora</label>
-      <div class="time-scroll">
-        <div class="ts-col"><button class="ts-btn" onclick="changeTime('h',1)">▲</button><div class="ts-val" id="tsH">10</div><button class="ts-btn" onclick="changeTime('h',-1)">▼</button></div>
-        <div class="ts-sep">:</div>
-        <div class="ts-col"><button class="ts-btn" onclick="changeTime('m',1)">▲</button><div class="ts-val" id="tsM">00</div><button class="ts-btn" onclick="changeTime('m',-1)">▼</button></div>
-      </div>
+      <input class="fi" id="agHora" placeholder="ej: 10:30am · 3pm · 14:00">
     </div>
-    <div class="fg"><label class="flbl">Valor del Servicio</label>
-      <div class="val-slider-wrap">
-        <input type="range" class="val-slider" id="agValorSlider" min="1" max="200" value="25" oninput="updateValSlider()">
-        <div class="val-display" id="agValorDisplay">$25</div>
-      </div>
+    <div id="agPriceInfo" style="display:none;background:rgba(255,255,255,0.6);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+      <div class="flex jb ic"><span class="muted">Precio del servicio:</span><span style="color:var(--wine);font-weight:700;" id="agPriceVal">$0</span></div>
+      <div class="flex jb ic mt6"><span class="muted">50% Anticipo estimado:</span><span style="font-weight:600;" id="agAnt">$0</span></div>
+      <div class="flex jb ic mt6"><span class="muted">Saldo en cita:</span><span id="agSaldo">$0</span></div>
     </div>
-    <div id="agAntBox" style="display:none;background:rgba(255,255,255,0.6);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
-      <div class="flex jb ic"><span class="muted">50% Anticipo:</span><span style="color:var(--wine-light);font-weight:600;" id="agAnt">$0</span></div>
-      <div class="flex jb ic mt8"><span class="muted">Saldo en cita:</span><span id="agSaldo">$0</span></div>
+    <div class="fg"><label class="flbl">Preferencia de bebida ☕</label>
+      <input class="fi" id="agPreferencia" placeholder="ej: café negro, agua, jugo de naranja...">
     </div>
     <div class="fg"><label class="flbl">Empleada</label><select class="fs" id="agEmpleada"><option value="">— Seleccionar —</option></select></div>
     <div class="fg"><label class="flbl">¿Referida de embajadora?</label><select class="fs" id="agEmb"><option value="">No / Contacto directo</option></select></div>
@@ -1031,8 +1045,19 @@ input[type=range]{accent-color:var(--wine);}
     <div class="div"></div>
     <div style="font-size:14px;font-weight:600;color:var(--wine);margin-bottom:10px;">✏️ Agregar Novedad</div>
     <div class="fg"><label class="flbl">Novedad</label><textarea class="fta" id="cdNovedad" placeholder="Novedades, cambios..."></textarea></div>
-    <div class="fg"><label class="flbl">Actualizar estado</label>
-      <select class="fs" id="cdEstado"><option value="">Sin cambio</option><option value="pendiente">Pendiente</option><option value="realizada">Realizada</option><option value="cancelada">Cancelada</option></select>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Actualizar estado</label>
+        <select class="fs" id="cdEstado"><option value="">Sin cambio</option><option value="pendiente">Pendiente</option><option value="realizada">Realizada</option><option value="cancelada">Cancelada</option></select>
+      </div>
+      <div class="fg"><label class="flbl">Tipo de pago</label>
+        <select class="fs" id="cdTipoPago"><option value="Efectivo">💵 Efectivo</option><option value="Transferencia">🏦 Transferencia</option></select>
+      </div>
+    </div>
+    <div class="fg" id="cdComprobanteWrap">
+      <label class="flbl">Comprobante de pago <span class="muted">(opcional)</span></label>
+      <input type="file" id="cdComprobanteFile" accept="image/*,application/pdf" style="display:none" onchange="previewComprobante(this)">
+      <div class="drop-zone" onclick="document.getElementById('cdComprobanteFile').click()">🧾 Subir comprobante</div>
+      <div id="cdComprobantePreview" style="margin-top:6px;display:none;font-size:12px;color:var(--wine);">✅ Archivo listo para subir</div>
     </div>
     <button class="btn btn-r fw100" onclick="saveCitaDetalle()">💾 Guardar actualización</button>
   </div>
@@ -1094,6 +1119,27 @@ input[type=range]{accent-color:var(--wine);}
   </div>
 </div>
 
+<div class="overlay" id="modTransaccion">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-hdr"><div class="modal-title">💳 Nueva Transacción</div><button class="close-btn" onclick="closeModal('modTransaccion')">✕</button></div>
+    <div class="g2">
+      <div class="fg"><label class="flbl">Fecha</label><input class="fi" type="date" id="trxFecha"></div>
+      <div class="fg"><label class="flbl">Tipo</label>
+        <select class="fs" id="trxTipo"><option value="Transferencia">🏦 Transferencia</option><option value="Efectivo">💵 Efectivo</option><option value="Otro">📦 Otro</option></select>
+      </div>
+    </div>
+    <div class="fg"><label class="flbl">Nombre de cuenta / destino</label><input class="fi" id="trxCuenta" placeholder="ej: Banco Pichincha · Cuenta Nro. 123..."></div>
+    <div class="fg"><label class="flbl">Monto</label><input class="fi" type="number" id="trxMonto" placeholder="$0"></div>
+    <div class="fg"><label class="flbl">Notas <span class="muted">(opcional)</span></label><input class="fi" id="trxNotas" placeholder="ej: pago proveedor, retiro de efectivo..."></div>
+    <div class="fg"><label class="flbl">Comprobante <span class="muted">(opcional)</span></label>
+      <input type="file" id="trxComprobanteFile" accept="image/*,application/pdf" style="display:none" onchange="document.getElementById('trxComprobanteLabel').textContent='✅ '+this.files[0]?.name">
+      <div class="drop-zone" onclick="document.getElementById('trxComprobanteFile').click()">🧾 Adjuntar comprobante</div>
+      <div id="trxComprobanteLabel" style="font-size:12px;color:var(--wine);margin-top:4px;"></div>
+    </div>
+    <button class="btn btn-r fw100 mt8" onclick="guardarTransaccion()">💾 Guardar</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1108,12 +1154,12 @@ let SB = null;
 let DB = {
   clientes:[], citas:[], ventas:[],
   empleados:[], embajadoras:[],
-  compras:[], gastos:[], checklist:[],
+  compras:[], gastos:[], checklist:[], transacciones:[],
   publicaciones:[], diagnosticos:[],
   imagenes:[], notificaciones:[],
   asistencias:{},
   config:{ meta_mes:0, comisiones:{}, servicios_config:null,
-    msg_templates:[], ig_behold_id: null, social_stats: [] }
+    msg_templates:[], ig_behold_id: null, social_stats: [], caja_chica: 0 }
 };
 
 // ── SERVICES LIST ──
@@ -1225,7 +1271,7 @@ async function loadAllData() {
     {data: compras}, {data: gastos}, {data: checklist},
     {data: publicaciones}, {data: diagnosticos},
     {data: imagenes}, {data: notificaciones},
-    {data: asistencias}, {data: config}
+    {data: asistencias}, {data: config}, {data: transacciones}
   ] = await Promise.all([
     q('clientes',    r => r.order('nombre')),
     q('citas',       r => r.order('fecha',{ascending:false})),
@@ -1241,8 +1287,10 @@ async function loadAllData() {
     q('notificaciones',  r => r.order('created_at',{ascending:false})),
     q('asistencias'),
     q('configuracion'),
+    q('transacciones', r => r.order('fecha',{ascending:false})),
   ]);
 
+  DB.transacciones = transacciones || [];
   DB.clientes = clientes || [];
   DB.citas = citas || [];
   DB.ventas = ventas || [];
@@ -1272,6 +1320,7 @@ async function loadAllData() {
   DB.config.msg_templates = Array.isArray(cfgMap.msg_templates) ? cfgMap.msg_templates : DEFAULT_TEMPLATES;
   DB.config.ig_behold_id = cfgMap.ig_behold_id || null;
   DB.config.social_stats = Array.isArray(cfgMap.social_stats) ? cfgMap.social_stats : [];
+  DB.config.caja_chica = parseFloat(cfgMap.caja_chica)||0;
 }
 
 async function saveConfig_(key, value) {
@@ -1647,13 +1696,15 @@ function renderHistorial(){
   else list.sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const hh=document.getElementById('histHead'),hb=document.getElementById('histBody');
   if(!hh||!hb) return;
-  hh.innerHTML='<tr><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Estado</th><th>Empleada</th></tr>';
+  hh.innerHTML='<tr><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Tipo</th><th>Estado</th><th>Comprobante</th><th>Empleada</th></tr>';
   hb.innerHTML=list.length?list.slice(0,60).map(v=>`<tr>
     <td>${v.fecha}</td><td>${v.nombre}</td><td>${v.servicio}</td>
     <td style="color:var(--wine);font-weight:600;">$${v.precio}</td>
+    <td><span class="badge ${v.tipo==='Transferencia'?'b-ice':'b-gold'}">${v.tipo||'Efectivo'}</span></td>
     <td><span class="badge ${v.estado==='Pagado'?'b-green':v.estado==='Anticipo'?'b-gold':'b-wine'}">${v.estado||'—'}</span></td>
+    <td style="text-align:center;">${v.comprobante_url?`<a href="${v.comprobante_url}" target="_blank" style="color:var(--wine);font-size:18px;" title="Ver comprobante">🧾</a>`:'—'}</td>
     <td>${v.empleada||'—'}</td></tr>`).join('')
-    :'<tr><td colspan="6" class="muted italic" style="text-align:center;padding:18px;">Sin ventas</td></tr>';
+    :'<tr><td colspan="8" class="muted italic" style="text-align:center;padding:18px;">Sin ventas</td></tr>';
 }
 function exportVentas(){
   const csv=['Fecha,Cliente,Servicio,Valor,Estado,Empleada',...DB.ventas.map(v=>`${v.fecha},"${v.nombre}","${v.servicio}",${v.precio},"${v.estado||''}","${v.empleada||''}"`)].join('\n');
@@ -1670,10 +1721,17 @@ function renderRankings(){
 }
 
 // ── AGENDA ──
-let tsH=10,tsM=0;
-function changeTime(u,d){ if(u==='h') tsH=(tsH+d+24)%24; else tsM=(tsM+d*5+60)%60; document.getElementById('tsH').textContent=p(tsH); document.getElementById('tsM').textContent=p(tsM);}
-function updateValSlider(){const v=document.getElementById('agValorSlider').value;document.getElementById('agValorDisplay').textContent='$'+v;const ab=document.getElementById('agAntBox');if(ab)ab.style.display='block';const aa=document.getElementById('agAnt');if(aa)aa.textContent='$'+(v/2).toFixed(0);const as=document.getElementById('agSaldo');if(as)as.textContent='$'+(v/2).toFixed(0);}
-function calcAgAnticipo(){updateValSlider();}
+function calcAgAnticipo(){
+  const raw=document.getElementById('agServicio').value;
+  if(!raw) return;
+  const price=parseFloat(raw.split('|')[1])||0;
+  const pi=document.getElementById('agPriceInfo');
+  if(pi) pi.style.display='block';
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('agPriceVal','$'+price.toFixed(0));
+  set('agAnt','$'+(price/2).toFixed(0));
+  set('agSaldo','$'+(price/2).toFixed(0));
+}
 function searchClientesAgenda(){
   const q=document.getElementById('agClienteSearch').value.toLowerCase(); const drop=document.getElementById('agClienteDrop');
   if(!q){drop.style.display='none';return;}
@@ -1688,9 +1746,9 @@ function previewInspo(input){const f=input.files[0];if(!f)return;const r=new Fil
 async function guardarCita(){
   const nombre=document.getElementById('agClienteSearch').value.trim(); if(!nombre){toast('⚠️ Selecciona cliente');return;}
   const svcRaw=document.getElementById('agServicio').value; if(!svcRaw){toast('⚠️ Selecciona servicio');return;}
-  const [svc]=svcRaw.split('|');
-  const valor=parseFloat(document.getElementById('agValorSlider').value)||0;
-  const hora=`${p(tsH)}:${p(tsM)}`;
+  const [svc,svcPrice]=svcRaw.split('|');
+  const valor=parseFloat(svcPrice)||0;
+  const hora=document.getElementById('agHora').value.trim()||'Sin hora';
   const inspoB64=document.getElementById('agInspoImg').src;
   let inspo_url='';
   if(inspoB64.startsWith('data:')) {
@@ -1708,6 +1766,7 @@ async function guardarCita(){
     hora,valor,anticipo:valor/2,saldo:valor/2,
     empleada:document.getElementById('agEmpleada').value,
     embajadora:document.getElementById('agEmb').value,
+    preferencia:document.getElementById('agPreferencia').value.trim(),
     inspo_url,notas:document.getElementById('agNotas').value,status:'pendiente',novedades:[]};
   try {
     const {data,error}=await SB.from('citas').insert([cita]).select(); if(error) throw error;
@@ -1733,9 +1792,10 @@ async function guardarCita(){
     closeModal('modAgenda'); showProto(saved);
     addNotif('cita-'+saved.id,'📅 Cita: '+nombre+' · '+saved.fecha+' '+hora,saved.fecha);
     refreshAgenda(); refreshHome();
-    ['agClienteSearch','agNotas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['agClienteSearch','agNotas','agHora','agPreferencia'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     document.getElementById('agClienteId').value='';
     document.getElementById('agInspoPreview').style.display='none';
+    document.getElementById('agPriceInfo').style.display='none';
   } catch(e){ toast('❌ Error: '+e.message); }
 }
 function showProto(c){
@@ -1747,11 +1807,52 @@ function showProto(c){
   document.getElementById('protoWABtn').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
   document.getElementById('protoAlert').classList.add('open');
 }
+function renderHistorialAgrupado(citas){
+  // Agrupar por cliente
+  const grupos={};
+  citas.forEach(c=>{
+    const key=c.cliente_nombre;
+    if(!grupos[key]) grupos[key]={nombre:key,citas:[],meses:new Set()};
+    grupos[key].citas.push(c);
+    grupos[key].meses.add(c.fecha.slice(0,7));
+  });
+  const MESES=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return Object.values(grupos).map(g=>{
+    const last=g.citas[0];
+    const lastMes=last.fecha.slice(0,7);
+    const [y,m]=lastMes.split('-');
+    const mesLabel=`${MESES[parseInt(m)]} ${y}`;
+    const uid='hg_'+g.nombre.replace(/\s+/g,'_');
+    return `<div style="background:rgba(255,255,255,0.65);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;" onclick="toggleHG('${uid}')">
+        <div>
+          <div style="font-weight:700;font-size:14px;">${g.nombre}</div>
+          <div style="font-size:11px;color:var(--soft);margin-top:2px;">Último servicio: ${mesLabel} · ${g.citas.length} servicio${g.citas.length>1?'s':''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge b-wine">${g.citas.length}</span>
+          <span id="ic_${uid}" style="color:var(--soft);font-size:11px;">▼</span>
+        </div>
+      </div>
+      <div id="${uid}" style="display:none;border-top:1px solid var(--border);padding:10px 12px;">
+        ${g.citas.map(c=>aptCard(c,false)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleHG(uid){
+  const el=document.getElementById(uid),ic=document.getElementById('ic_'+uid);
+  if(!el)return;
+  const open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  if(ic)ic.textContent=open?'▼':'▲';
+}
+
 function refreshAgenda(){
   const prox=DB.citas.filter(c=>c.status==='pendiente').sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.hora.localeCompare(b.hora));
   const hist=DB.citas.filter(c=>c.status!=='pendiente').sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const ap=document.getElementById('agendaProximas'); if(ap) ap.innerHTML=prox.length?prox.map(c=>aptCard(c,true)).join(''):'<div class="muted italic mb14">Sin próximas citas.</div>';
-  const ah=document.getElementById('agendaHistorial'); if(ah) ah.innerHTML=hist.length?hist.map(c=>aptCard(c,false)).join(''):'<div class="muted italic">Sin historial.</div>';
+  const ah=document.getElementById('agendaHistorial'); if(ah) ah.innerHTML=hist.length?renderHistorialAgrupado(hist):'<div class="muted italic">Sin historial.</div>';
   const month=nowEC().toISOString().slice(0,7);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   set('ctrlTotal',DB.citas.filter(c=>c.fecha.startsWith(month)).length);
@@ -1768,6 +1869,7 @@ function aptCard(c,isProx){
     <div class="apt-time">📅 ${c.fecha} · ⏰ ${c.hora}${c.empleada?' · 👩 '+c.empleada:''}</div>
     <div class="flex ic jb"><div class="apt-client">${c.cliente_nombre}</div><div class="flex gap6 ic">${isSel?'<span style="font-size:14px;">💬</span>':''}${badge}</div></div>
     <div class="apt-svc">${c.servicio}${c.valor?' · $'+c.valor:''}</div>
+    ${c.preferencia?`<div style="font-size:11px;margin-top:2px;color:#7a5c00;">☕ ${c.preferencia}</div>`:''}
     ${c.notas?`<div class="muted" style="font-size:11px;margin-top:2px;">📝 ${c.notas}</div>`:''}
     ${isProx?`<div class="flex gap8 mt8 ic">
       <button class="btn btn-g btn-sm" onclick="event.stopPropagation();setCitaStatus('${c.id}','realizada')">✅ Realizada</button>
@@ -1841,18 +1943,39 @@ function inspeccionarCita(id){
     ${novedades.length?`<div style="font-size:14px;font-weight:600;color:var(--wine);margin:12px 0 8px;">📋 Historial</div>`+novedades.map(n=>`<div style="background:var(--ice-light);border-radius:8px;padding:10px 13px;margin-bottom:7px;font-size:12.5px;"><div style="font-size:10px;color:var(--soft);margin-bottom:2px;">${n.fecha}</div>${n.texto}</div>`).join(''):''}`;
   document.getElementById('cdEstado').value='';
   document.getElementById('cdNovedad').value='';
+  document.getElementById('cdComprobantePreview').style.display='none';
+  document.getElementById('cdComprobanteFile').value='';
   openModal('modCitaDetalle');
+}
+function previewComprobante(input){
+  if(input.files[0]){
+    document.getElementById('cdComprobantePreview').style.display='block';
+    document.getElementById('cdComprobantePreview').textContent='✅ '+input.files[0].name+' listo para subir';
+  }
 }
 async function saveCitaDetalle(){
   const c=DB.citas.find(x=>x.id===_currentCitaId); if(!c) return;
   const nov=document.getElementById('cdNovedad').value.trim();
   const est=document.getElementById('cdEstado').value;
+  const tipoPago=document.getElementById('cdTipoPago').value||'Efectivo';
   if(!c.novedades) c.novedades=[];
   if(nov) c.novedades.push({texto:nov,fecha:new Date().toISOString().split('T')[0]});
   const updates={novedades:c.novedades};
   if(est&&est!==c.status){ updates.status=est; c.status=est;
     if(est==='realizada'&&!DB.ventas.find(v=>v.cita_id===c.id)){
-      const venta={cita_id:c.id,nombre:c.cliente_nombre,servicio:c.servicio,precio:c.valor||0,fecha:c.fecha,estado:'Pagado',empleada:c.empleada||''};
+      // Upload comprobante if provided
+      let comprobante_url='';
+      const cFile=document.getElementById('cdComprobanteFile').files[0];
+      if(cFile){
+        try{
+          const ext=cFile.name.split('.').pop()||'jpg';
+          const fname=`comp_${Date.now()}.${ext}`;
+          const {error:upErr}=await SB.storage.from('mala-images').upload(fname,cFile,{contentType:cFile.type,upsert:true});
+          if(!upErr){const {data:ud}=SB.storage.from('mala-images').getPublicUrl(fname);comprobante_url=ud.publicUrl||'';}
+        }catch(e){console.warn('comprobante upload failed',e);}
+      }
+      const venta={cita_id:c.id,nombre:c.cliente_nombre,servicio:c.servicio,precio:c.valor||0,
+        fecha:c.fecha,estado:'Pagado',empleada:c.empleada||'',tipo:tipoPago,comprobante_url};
       const {data}=await SB.from('ventas').insert([venta]).select();
       if(data) DB.ventas.unshift(data[0]);
     }
@@ -1863,10 +1986,11 @@ async function saveCitaDetalle(){
 // ── INVENTARIO ──
 function invTab(el,t){
   document.querySelectorAll('#invTabs .tab').forEach(b=>b.classList.remove('active')); el.classList.add('active');
-  ['compras','aprobacion','gastos','checklist'].forEach(x=>{const d=document.getElementById('inv-'+x);if(d)d.style.display='none';});
+  ['compras','aprobacion','gastos','checklist','transacciones'].forEach(x=>{const d=document.getElementById('inv-'+x);if(d)d.style.display='none';});
   document.getElementById('inv-'+t).style.display='block';
   if(t==='gastos') renderGastos(); if(t==='checklist'){renderChecklist();populateEmpDrop(['chkEmpleado']);}
   if(t==='compras') renderCompras(); if(t==='aprobacion') renderAprobacion();
+  if(t==='transacciones') renderTransacciones();
 }
 function refreshInventario(){ renderCompras(); }
 async function guardarCompra(){
@@ -1914,6 +2038,86 @@ function renderGastos(){
   const tc=document.getElementById('totalComprasAprob');if(tc)tc.textContent='$'+ta.toFixed(0);
 }
 async function deleteGasto(id){try{await SB.from('gastos').delete().eq('id',id);DB.gastos=DB.gastos.filter(x=>x.id!==id);renderGastos();}catch(e){toast('❌ '+e.message);}}
+
+// ── TRANSACCIONES ──
+function renderTransacciones(){
+  const el=document.getElementById('transaccionesList'); if(!el) return;
+  const cc=document.getElementById('cajachicaInput');
+  const cd=document.getElementById('cajachicaDisplay');
+  if(cc) cc.value=DB.config.caja_chica||0;
+  if(cd) cd.textContent='$'+(DB.config.caja_chica||0);
+  const transf=DB.transacciones.filter(t=>t.tipo==='Transferencia').reduce((a,t)=>a+parseFloat(t.monto||0),0);
+  const efect=DB.transacciones.filter(t=>t.tipo==='Efectivo').reduce((a,t)=>a+parseFloat(t.monto||0),0);
+  const tt=document.getElementById('totalTransf'); if(tt) tt.textContent='$'+transf.toFixed(0);
+  const te=document.getElementById('totalEfect'); if(te) te.textContent='$'+efect.toFixed(0);
+  if(!DB.transacciones.length){el.innerHTML='<div class="muted italic">Sin transacciones registradas.</div>';return;}
+  el.innerHTML=DB.transacciones.map(t=>{
+    const badge=t.tipo==='Transferencia'?'b-ice':t.tipo==='Efectivo'?'b-gold':'b-rose';
+    return `<div class="card mb8 flex ic jb gap8">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;">${t.cuenta}</div>
+        <div style="font-size:11px;color:var(--soft);margin-top:2px;">${t.fecha||''}${t.notas?` · ${t.notas}`:''}</div>
+      </div>
+      <div class="flex gap8 ic">
+        <span class="badge ${badge}">${t.tipo}</span>
+        <span class="fancy" style="font-size:20px;color:var(--wine);">$${parseFloat(t.monto||0).toFixed(0)}</span>
+        ${t.comprobante_url?`<a href="${t.comprobante_url}" target="_blank" title="Ver comprobante" style="text-decoration:none;font-size:16px;">🧾</a>`:''}
+        <button class="btn btn-o btn-sm" onclick="deleteTransaccion('${t.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function guardarTransaccion(){
+  const cuenta=document.getElementById('trxCuenta').value.trim();
+  if(!cuenta){toast('⚠️ Agrega cuenta/destino');return;}
+  let comprobante_url='';
+  const cFile=document.getElementById('trxComprobanteFile').files[0];
+  if(cFile){
+    try{
+      const ext=cFile.name.split('.').pop();
+      const fname=`trx_${Date.now()}.${ext}`;
+      const {error:upErr}=await SB.storage.from('mala-images').upload(fname,cFile,{contentType:cFile.type,upsert:true});
+      if(!upErr){const {data:ud}=SB.storage.from('mala-images').getPublicUrl(fname);comprobante_url=ud.publicUrl||'';}
+    }catch(e){console.warn('trx comprobante upload failed',e);}
+  }
+  const obj={
+    fecha:document.getElementById('trxFecha').value||new Date().toISOString().slice(0,10),
+    tipo:document.getElementById('trxTipo').value,
+    cuenta,
+    monto:parseFloat(document.getElementById('trxMonto').value)||0,
+    notas:document.getElementById('trxNotas').value.trim(),
+    comprobante_url
+  };
+  try{
+    const {data,error}=await SB.from('transacciones').insert([obj]).select();
+    if(error) throw error;
+    DB.transacciones.unshift(data[0]);
+    closeModal('modTransaccion');
+    renderTransacciones();
+    ['trxCuenta','trxMonto','trxNotas'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    document.getElementById('trxComprobanteFile').value='';
+    document.getElementById('trxComprobanteLabel').textContent='';
+    toast('✅ Transacción guardada');
+  }catch(e){toast('❌ '+e.message);}
+}
+async function saveCajaChica(){
+  const val=parseFloat(document.getElementById('cajachicaInput').value)||0;
+  DB.config.caja_chica=val;
+  const cd=document.getElementById('cajachicaDisplay');
+  if(cd) cd.textContent='$'+val;
+  try{
+    await SB.from('configuracion').upsert({clave:'caja_chica',valor:String(val)},{onConflict:'clave'});
+    toast('✅ Caja chica actualizada');
+  }catch(e){toast('❌ '+e.message);}
+}
+async function deleteTransaccion(id){
+  if(!confirm('¿Eliminar transacción?'))return;
+  try{
+    await SB.from('transacciones').delete().eq('id',id);
+    DB.transacciones=DB.transacciones.filter(x=>x.id!==id);
+    renderTransacciones();
+  }catch(e){toast('❌ '+e.message);}
+}
 async function addChk(){
   const v=document.getElementById('chkNuevo').value.trim(); if(!v) return;
   const emp=document.getElementById('chkEmpleado')?.value||'';
@@ -1926,7 +2130,25 @@ async function addChk(){
 }
 function renderChecklist(){
   const el=document.getElementById('chkList'); if(!el) return;
-  el.innerHTML=DB.checklist.map(c=>`<div class="chk-item"><input type="checkbox" ${c.done?'checked':''} onchange="toggleChk('${c.id}',this.checked)"><span class="${c.done?'chk-done':''}" style="flex:1;font-size:14px;">${c.texto}${c.empleado?` <span class="badge b-ice">${c.empleado}</span>`:''}${c.deadline?` <span class="badge b-gold">⏰ ${c.deadline}</span>`:''}</span><button class="btn btn-wa btn-xs" onclick="chkWA('${c.id}')">📱</button><button class="btn btn-o btn-xs" onclick="deleteChk('${c.id}')">🗑</button></div>`).join('')||'<div class="muted italic">Checklist vacío.</div>';
+  const pending=DB.checklist.filter(c=>!c.done);
+  const done=DB.checklist.filter(c=>c.done);
+  const mkItem=c=>`<div class="chk-item"><input type="checkbox" ${c.done?'checked':''} onchange="toggleChk('${c.id}',this.checked)"><span class="${c.done?'chk-done':''}" style="flex:1;font-size:14px;">${c.texto}${c.empleado?` <span class="badge b-ice">${c.empleado}</span>`:''}${c.deadline?` <span class="badge b-gold">⏰ ${c.deadline}</span>`:''}</span><button class="btn btn-wa btn-xs" onclick="chkWA('${c.id}')">📱</button><button class="btn btn-o btn-xs" onclick="deleteChk('${c.id}')">🗑</button></div>`;
+  el.innerHTML=
+    (pending.length?pending.map(mkItem).join(''):'<div class="muted italic mb8">Sin tareas pendientes.</div>')+
+    (done.length?`<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleCulminadas()">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);">✅ Culminadas (${done.length})</span>
+        <span id="culIcon" style="color:var(--soft);font-size:12px;">▼</span>
+      </div>
+      <div id="culList" style="display:none;">${done.map(mkItem).join('')}</div>
+    </div>`:'');
+}
+function toggleCulminadas(){
+  const el=document.getElementById('culList'),ic=document.getElementById('culIcon');
+  if(!el)return;
+  const open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  if(ic)ic.textContent=open?'▼':'▲';
 }
 async function toggleChk(id,v){const c=DB.checklist.find(x=>x.id===id);if(c){c.done=v;try{await SB.from('checklist_items').update({done:v}).eq('id',id);}catch(e){}renderChecklist();}}
 async function deleteChk(id){try{await SB.from('checklist_items').delete().eq('id',id);DB.checklist=DB.checklist.filter(x=>x.id!==id);renderChecklist();}catch(e){toast('❌ '+e.message);}}
@@ -2260,7 +2482,7 @@ function renderCalendar(){
     document.getElementById('calTitle').textContent=calDate.toLocaleDateString('es-EC',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     document.getElementById('calDayHdrs').innerHTML='';
     const citasDay=DB.citas.filter(c=>c.fecha===ds&&c.status!=='cancelada').sort((a,b)=>a.hora.localeCompare(b.hora));
-    document.getElementById('calGrid').innerHTML=citasDay.length?`<div>${citasDay.map(c=>`<div class="apt-card"><div class="apt-time">⏰ ${c.hora}${c.empleada?' · 👩 '+c.empleada:''}</div><div class="apt-client">${c.cliente_nombre}</div><div class="apt-svc">${c.servicio}</div></div>`).join('')}</div>`:'<div class="muted italic" style="padding:24px;text-align:center;">Sin citas este día.</div>';
+    document.getElementById('calGrid').innerHTML=citasDay.length?`<div>${citasDay.map(c=>`<div class="apt-card"><div class="apt-time">⏰ ${c.hora}${c.empleada?' · 👩 '+c.empleada:''}</div><div class="apt-client">${c.cliente_nombre}</div><div class="apt-svc">${c.servicio}</div>${c.preferencia?`<div style="font-size:11px;color:#7a5c00;margin-top:3px;">☕ ${c.preferencia}</div>`:''}</div>`).join('')}</div>`:'<div class="muted italic" style="padding:24px;text-align:center;">Sin citas este día.</div>';
   }
   const month=`${calDate.getFullYear()}-${p(calDate.getMonth()+1)}`;
   const mCitas=DB.citas.filter(c=>c.fecha.startsWith(month));
@@ -2400,19 +2622,22 @@ function openServEditor(){
     DB.config.servicios_config=SERVICES.map(s=>({...s,activo:true}));
   }
   const list=document.getElementById('servEditorList');
-  list.innerHTML=DB.config.servicios_config.map((s,i)=>`<div class="flex ic gap8 mb8" style="padding:7px 0;border-bottom:1px solid var(--border);">
-    <input type="checkbox" id="se_${i}" ${s.activo!==false?'checked':''} style="accent-color:var(--wine);width:16px;height:16px;flex-shrink:0;">
-    <label for="se_${i}" style="flex:1;font-size:13.5px;cursor:pointer;">${s.name}</label>
-    <span class="muted" style="font-size:11px;margin-right:4px;">${s.cat}</span>
-    <input type="number" style="width:68px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;background:rgba(255,255,255,0.7);" value="${s.price}" id="sp_${i}">
+  list.innerHTML=DB.config.servicios_config.map((s,i)=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);">
+    <div class="flex ic gap8 mb6">
+      <input type="checkbox" id="se_${i}" ${s.activo!==false?'checked':''} style="accent-color:var(--wine);width:16px;height:16px;flex-shrink:0;">
+      <label for="se_${i}" style="flex:1;font-size:13.5px;cursor:pointer;font-weight:500;">${s.name}</label>
+      <span class="muted" style="font-size:11px;margin-right:4px;">${s.cat}</span>
+      <input type="number" style="width:68px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;background:rgba(255,255,255,0.7);" value="${s.price}" id="sp_${i}">
+    </div>
+    <input type="text" class="fi" id="sd_${i}" value="${s.descripcion||''}" placeholder="Descripción breve (ej: durabilidad de 3 semanas sin astillas)" style="font-size:12px;color:var(--soft);padding:5px 10px;">
   </div>`).join('');
   openModal('modServEditor');
 }
 async function saveServEditor(){
   if(!DB.config.servicios_config) return;
   DB.config.servicios_config.forEach((s,i)=>{
-    const chk=document.getElementById('se_'+i); const inp=document.getElementById('sp_'+i);
-    if(chk) s.activo=chk.checked; if(inp) s.price=parseFloat(inp.value)||s.price;
+    const chk=document.getElementById('se_'+i); const inp=document.getElementById('sp_'+i); const desc=document.getElementById('sd_'+i);
+    if(chk) s.activo=chk.checked; if(inp) s.price=parseFloat(inp.value)||s.price; if(desc) s.descripcion=desc.value.trim();
   });
   await saveConfig_('servicios_config',DB.config.servicios_config);
   populateSvcDrops(); closeModal('modServEditor'); toast('✅ Servicios actualizados');
