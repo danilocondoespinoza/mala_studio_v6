@@ -736,14 +736,14 @@ input[type=range]{accent-color:var(--wine);}
   <!-- INVENTARIO -->
   <div class="panel" id="panel-inventario">
     <div class="tabs" id="invTabs">
-      <button class="tab active" onclick="invTab(this,'compras')">🛒 Compras</button>
-      <button class="tab" onclick="invTab(this,'aprobacion')">⏳ Aprobación</button>
-      <button class="tab" onclick="invTab(this,'gastos')">💸 Gastos Fijos</button>
+      <button class="tab active" onclick="invTab(this,'tonos')">💅 Tonos</button>
       <button class="tab" onclick="invTab(this,'transacciones')">💳 Transacciones</button>
-      <button class="tab" onclick="invTab(this,'tonos')">💅 Tonos</button>
       <button class="tab" onclick="invTab(this,'checklist')">✅ Checklist</button>
+      <button class="tab" onclick="invTab(this,'gastos')">💸 Gastos Fijos</button>
+      <button class="tab" onclick="invTab(this,'compras')">🛒 Compras</button>
+      <button class="tab" onclick="invTab(this,'aprobacion')">⏳ Aprobación</button>
     </div>
-    <div id="inv-compras"><div class="sh mb14"><div class="st">Compras Aprobadas</div><button class="btn btn-r btn-sm" onclick="openModal('modCompra')">+ Nueva</button></div><div id="comprasList"></div></div>
+    <div id="inv-compras" style="display:none"><div class="sh mb14"><div class="st">Compras Aprobadas</div><button class="btn btn-r btn-sm" onclick="openModal('modCompra')">+ Nueva</button></div><div id="comprasList"></div></div>
     <div id="inv-aprobacion" style="display:none"><div class="sh mb14"><div class="st">Pendiente de Aprobación</div></div><div id="aprobacionList"></div></div>
     <div id="inv-gastos" style="display:none">
       <div class="sh mb14"><div class="st">Gastos Fijos</div><button class="btn btn-r btn-sm" onclick="openModal('modGasto')">+ Agregar</button></div>
@@ -775,7 +775,7 @@ input[type=range]{accent-color:var(--wine);}
         <div class="st">💅 Paleta de Tonos</div>
         <div class="flex gap8">
           <button class="btn btn-o btn-sm" onclick="openModal('modTonoImagen')">🖼 Extraer de imagen</button>
-          <button class="btn btn-r btn-sm" onclick="openModal('modNuevoTono')">+ Nuevo tono</button>
+          <button class="btn btn-r btn-sm" onclick="_openNewTono()">+ Nuevo tono</button>
         </div>
       </div>
       <!-- Paginación + ordenamiento -->
@@ -1224,6 +1224,13 @@ input[type=range]{accent-color:var(--wine);}
       </div>
     </div>
     <button class="btn btn-r fw100 mt8" onclick="guardarTono()">💾 Guardar tono</button>
+    <div id="tonoEditActions" style="display:none;margin-top:10px;display:none;">
+      <div style="height:1px;background:var(--border);margin:10px 0;"></div>
+      <div class="flex gap8">
+        <button class="btn fw100" style="background:linear-gradient(135deg,#10B981,#065F46);color:#fff;flex:1;" onclick="registrarUsoTono()">➕ Registrar uso</button>
+        <button class="btn btn-o fw100" style="color:#c0392b;flex:1;" onclick="deleteTono(document.getElementById('modNuevoTono').dataset.editId)">🗑 Eliminar tono</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1809,18 +1816,50 @@ function refreshClientes(){
 }
 function renderFollowups(){
   const today=nowEC(); const el=document.getElementById('followupList'); if(!el) return;
-  const list=DB.citas.filter(c=>{
-    if(c.status!=='realizada') return false;
-    const d=new Date(c.fecha); const diff=Math.floor((today-d)/(1000*60*60*24));
-    return diff>=14&&diff<=20;
-  });
-  if(!list.length){el.innerHTML='<div class="muted italic">Sin seguimientos pendientes.</div>';return;}
-  el.innerHTML=list.map(c=>`<div class="followup-item">
-    <div style="flex:1;"><div class="followup-name">${c.cliente_nombre}</div>
-    <div style="font-size:11.5px;color:var(--soft);">${c.servicio}</div>
-    <div style="font-size:11px;color:var(--wine-light);">Cita: ${c.fecha}</div></div>
-    <button class="btn btn-wa btn-sm" onclick="sendFollowupWA('${c.id}')">📱 WA</button>
-  </div>`).join('');
+  const MS_DAY=1000*60*60*24;
+  // Build list: for each 'realizada' cita, compute retoque date (fecha + 15 days)
+  const items=DB.citas
+    .filter(c=>c.status==='realizada')
+    .map(c=>{
+      const citaDate=new Date(c.fecha+'T00:00:00');
+      const retDate=new Date(citaDate.getTime()+15*MS_DAY);
+      const daysUntil=Math.floor((retDate-today)/MS_DAY); // negative = overdue
+      return {...c, retDate, daysUntil};
+    })
+    // Show: overdue up to 30 days back OR upcoming within 21 days
+    .filter(c=>c.daysUntil>=-30&&c.daysUntil<=21)
+    .sort((a,b)=>a.daysUntil-b.daysUntil); // most overdue first
+
+  if(!items.length){el.innerHTML='<div class="muted italic">Sin seguimientos pendientes.</div>';return;}
+
+  el.innerHTML=items.map(c=>{
+    const retStr=c.retDate.toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric'});
+    let badge, badgeStyle;
+    if(c.daysUntil<0){
+      badge=`Vencido hace ${Math.abs(c.daysUntil)} día${Math.abs(c.daysUntil)===1?'':'s'}`;
+      badgeStyle='background:#FEE2E2;color:#DC2626;border:1px solid #FECACA;';
+    } else if(c.daysUntil===0){
+      badge='¡Hoy es el día!';
+      badgeStyle='background:#FEF3C7;color:#D97706;border:1px solid #FDE68A;';
+    } else if(c.daysUntil<=3){
+      badge=`En ${c.daysUntil} día${c.daysUntil===1?'':'s'}`;
+      badgeStyle='background:#FEF3C7;color:#D97706;border:1px solid #FDE68A;';
+    } else {
+      badge=`En ${c.daysUntil} días`;
+      badgeStyle='background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0;';
+    }
+    return `<div class="followup-item">
+      <div style="flex:1;">
+        <div class="followup-name">${c.cliente_nombre}</div>
+        <div style="font-size:11.5px;color:var(--soft);margin:1px 0;">${c.servicio}</div>
+        <div style="font-size:11px;color:var(--wine-light);">Cita: ${c.fecha} · Retoque: ${retStr}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+        <span style="font-size:10.5px;padding:2px 8px;border-radius:20px;${badgeStyle}">${badge}</span>
+        <button class="btn btn-wa btn-sm" onclick="sendFollowupWA('${c.id}')">📱 WA</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 function sendFollowupWA(id){
   const c=DB.citas.find(x=>x.id===id); if(!c) return;
@@ -2365,8 +2404,36 @@ function openEditTono(id){
   document.getElementById('tonoHex').value=t.hex||'#F9A8D4';
   document.getElementById('tonoHexText').value=t.hex||'#F9A8D4';
   document.getElementById('tonoPreviewNail').style.background=t.hex||'#F9A8D4';
-  document.getElementById('modNuevoTono').dataset.editId=id;
+  const modal=document.getElementById('modNuevoTono');
+  modal.dataset.editId=id;
+  modal.querySelector('.modal-title').textContent=`💅 Editar · ${t.codigo} · ${t.contador||0} usos`;
+  const acts=document.getElementById('tonoEditActions');
+  if(acts) acts.style.display='block';
   openModal('modNuevoTono');
+}
+function _openNewTono(){
+  document.getElementById('tonoCode').value='';
+  document.getElementById('tonoNombre').value='';
+  document.getElementById('tonoHex').value='#F9A8D4';
+  document.getElementById('tonoHexText').value='#F9A8D4';
+  document.getElementById('tonoPreviewNail').style.background='#F9A8D4';
+  const modal=document.getElementById('modNuevoTono');
+  modal.dataset.editId='';
+  modal.querySelector('.modal-title').textContent='💅 Nuevo Tono';
+  const acts=document.getElementById('tonoEditActions');
+  if(acts) acts.style.display='none';
+  openModal('modNuevoTono');
+}
+async function registrarUsoTono(){
+  const id=document.getElementById('modNuevoTono').dataset.editId; if(!id) return;
+  const t=DB.tonos.find(x=>x.id===id); if(!t) return;
+  if(!confirm(`¿Registrar un uso adicional de "${t.codigo}"?\nContador actual: ${t.contador||0}`)) return;
+  t.contador=(t.contador||0)+1;
+  try{
+    await SB.from('tonos').update({contador:t.contador}).eq('id',id);
+    closeModal('modNuevoTono'); renderTonos();
+    toast(`✅ Uso registrado · ${t.codigo}: ${t.contador} usos`);
+  }catch(e){toast('❌ '+e.message);}
 }
 function syncTonoHex(val){
   const hex=/^#[0-9A-Fa-f]{6}$/.test(val)?val:'#F9A8D4';
@@ -2434,19 +2501,28 @@ function extractColors(imgEl){
   const grid=document.getElementById('extractedColorGrid');
   const wrap=document.getElementById('extractedColors');
   grid.innerHTML=top.map(h=>`
-    <label style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;">
-      <input type="checkbox" value="${h}" style="display:none;">
-      <div class="tono-nail" style="background:${h};width:44px;height:54px;" onclick="this.closest('label').querySelector('input').checked=!this.closest('label').querySelector('input').checked;this.style.outline=this.closest('label').querySelector('input').checked?'3px solid #3B82F6':'none';"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;" onclick="toggleExtractColor(this,'${h}')">
+      <div class="tono-nail" data-hex="${h}" style="background:${h};width:44px;height:54px;"></div>
       <span style="font-size:9px;color:var(--soft);">${h}</span>
-    </label>`).join('');
+    </div>`).join('');
   wrap.style.display='block';
 }
+const _extractSelected=new Set();
+function toggleExtractColor(el,hex){
+  const nail=el.querySelector('.tono-nail');
+  if(_extractSelected.has(hex)){
+    _extractSelected.delete(hex);
+    nail.style.outline='none'; nail.style.transform='';
+  } else {
+    _extractSelected.add(hex);
+    nail.style.outline='3px solid #3B82F6'; nail.style.transform='translateY(-3px) scale(1.07)';
+  }
+}
 async function guardarTonosExtraidos(){
-  const checked=[...document.querySelectorAll('#extractedColorGrid input:checked')];
-  if(!checked.length){toast('⚠️ Selecciona al menos un color');return;}
+  if(!_extractSelected.size){toast('⚠️ Selecciona al menos un color');return;}
+  const checked=[..._extractSelected];
   let added=0;
-  for(const inp of checked){
-    const hex=inp.value;
+  for(const hex of checked){
     const idx=DB.tonos.length+added+1;
     const codigo='EXT-'+String(idx).padStart(3,'0');
     const obj={codigo,nombre:'Extraído',hex,contador:0};
@@ -2455,6 +2531,7 @@ async function guardarTonosExtraidos(){
       if(!error&&data){DB.tonos.push(data[0]);added++;}
     }catch(e){}
   }
+  _extractSelected.clear();
   closeModal('modTonoImagen'); renderTonos();
   toast(`✅ ${added} tono${added!==1?'s':''} agregado${added!==1?'s':''}`);
 }
